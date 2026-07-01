@@ -74,6 +74,7 @@ export default function Upload() {
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [channelId, setChannelId] = useState<string | null>(null);
+  const [channelLoading, setChannelLoading] = useState(true);
   const [videoDuration, setVideoDuration] = useState(0);
 
   const [stage, setStage] = useState<"idle" | "extracting" | "uploading" | "processing" | "done">("idle");
@@ -86,20 +87,21 @@ export default function Upload() {
     supabase.from("categories").select("*").order("name").then(({ data }) => {
       if (data) setCategories(data);
     });
-    ensureChannel();
+    checkChannel();
   }, [user]);
 
-  async function ensureChannel() {
+  async function checkChannel() {
     if (!user) return;
+    setChannelLoading(true);
     const { data: existing } = await supabase
       .from("channels").select("id").eq("user_id", user.id).maybeSingle();
-    if (existing) { setChannelId(existing.id); return; }
-    const { data: profile } = await supabase
-      .from("profiles").select("username").eq("user_id", user.id).maybeSingle();
-    const name = profile?.username || user.username || user.email.split("@")[0];
-    const { data: created } = await supabase
-      .from("channels").insert({ user_id: user.id, name, description: "" }).select("id").single();
-    if (created) setChannelId(created.id);
+    if (existing) {
+      setChannelId(existing.id);
+    } else {
+      // No channel — redirect to create one first
+      navigate("/create-channel");
+    }
+    setChannelLoading(false);
   }
 
   async function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -275,6 +277,14 @@ export default function Upload() {
     setProgress(0);
     setUploadSpeed("");
     setTimeRemaining("");
+  }
+
+  if (channelLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (stage === "done") {

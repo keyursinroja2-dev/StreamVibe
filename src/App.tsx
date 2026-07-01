@@ -17,6 +17,7 @@ import Admin from "@/pages/Admin";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
+import CreateChannel from "@/pages/CreateChannel";
 import NotFound from "@/pages/NotFound";
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/create-channel" element={<CreateChannel />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
